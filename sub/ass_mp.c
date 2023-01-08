@@ -87,12 +87,14 @@ void mp_ass_set_style(ASS_Style *style, double res_y,
     style->Italic = opts->italic;
 }
 
-void mp_ass_configure_fonts(ASS_Renderer *priv, struct osd_style_opts *opts,
+void mp_ass_configure_fonts(ASS_Renderer *priv, ASS_Library *library,
+                            struct osd_style_opts *opts,
                             struct mpv_global *global, struct mp_log *log)
 {
     void *tmp = talloc_new(NULL);
     char *default_font = mp_find_config_file(tmp, global, "subfont.ttf");
     char *config       = mp_find_config_file(tmp, global, "fonts.conf");
+    char *fonts_dir    = mp_get_user_path(tmp, global, opts->fonts_dir);
 
     if (default_font && !mp_path_exists(default_font))
         default_font = NULL;
@@ -104,6 +106,8 @@ void mp_ass_configure_fonts(ASS_Renderer *priv, struct osd_style_opts *opts,
         font_provider = ASS_FONTPROVIDER_FONTCONFIG;
 
     mp_verbose(log, "Setting up fonts...\n");
+    if (fonts_dir)
+        ass_set_fonts_dir(library, fonts_dir);
     ass_set_fonts(priv, default_font, opts->font, font_provider, config, 1);
     mp_verbose(log, "Done.\n");
 
@@ -134,16 +138,12 @@ static void message_callback(int level, const char *format, va_list va, void *ct
 
 ASS_Library *mp_ass_init(struct mpv_global *global, struct mp_log *log)
 {
-    char *path = mp_find_config_file(NULL, global, "fonts");
     mp_dbg(log, "ASS library version: 0x%x (runtime 0x%x)\n",
            (unsigned)LIBASS_VERSION, ass_library_version());
     ASS_Library *priv = ass_library_init();
     if (!priv)
         abort();
     ass_set_message_cb(priv, message_callback, log);
-    if (path)
-        ass_set_fonts_dir(priv, path);
-    talloc_free(path);
     return priv;
 }
 

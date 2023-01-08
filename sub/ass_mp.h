@@ -45,7 +45,8 @@ void mp_ass_flush_old_events(ASS_Track *track, long long ts);
 void mp_ass_set_style(ASS_Style *style, double res_y,
                       const struct osd_style_opts *opts);
 
-void mp_ass_configure_fonts(ASS_Renderer *priv, struct osd_style_opts *opts,
+void mp_ass_configure_fonts(ASS_Renderer *priv, ASS_Library *library,
+                            struct osd_style_opts *opts,
                             struct mpv_global *global, struct mp_log *log);
 ASS_Library *mp_ass_init(struct mpv_global *global, struct mp_log *log);
 

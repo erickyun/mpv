@@ -67,6 +67,8 @@ static const m_option_t style_opts[] = {
         {"auto", 0}, {"left", 1}, {"center", 2}, {"right", 3})},
     {"font-provider", OPT_CHOICE(font_provider,
         {"auto", 0}, {"none", 1}, {"fontconfig", 2}), .flags = UPDATE_SUB_HARD},
+    {"fonts-dir", OPT_STRING(fonts_dir),
+        .flags = M_OPT_FILE | UPDATE_SUB_HARD},
     {0}
 };
 
@@ -85,6 +87,7 @@ const struct m_sub_options osd_style_conf = {
         .margin_y = 22,
         .align_x = -1,
         .align_y = -1,
+        .fonts_dir = "~~/fonts",
     },
     .change_flags = UPDATE_OSD,
 };
@@ -104,6 +107,7 @@ const struct m_sub_options sub_style_conf = {
         .margin_y = 22,
         .align_x = 0,
         .align_y = 1,
+        .fonts_dir = "~~/fonts",
     },
     .change_flags = UPDATE_OSD,
 };
@@ -124,7 +128,7 @@ struct osd_state *osd_create(struct mpv_global *global)
         .opts_cache = m_config_cache_alloc(osd, global, &mp_osd_render_sub_opts),
         .global = global,
         .log = mp_log_new(osd, global->log, "osd"),
-        .force_video_pts = ATOMIC_VAR_INIT(MP_NOPTS_VALUE),
+        .force_video_pts = MP_NOPTS_VALUE,
         .stats = stats_ctx_create(osd, global, "osd"),
     };
     pthread_mutex_init(&osd->lock, NULL);
@@ -210,12 +214,17 @@ void osd_set_render_subs_in_filter(struct osd_state *osd, bool s)
 
 void osd_set_force_video_pts(struct osd_state *osd, double video_pts)
 {
-    atomic_store(&osd->force_video_pts, video_pts);
+    pthread_mutex_lock(&osd->lock);
+    osd->force_video_pts = video_pts;
+    pthread_mutex_unlock(&osd->lock);
 }
 
 double osd_get_force_video_pts(struct osd_state *osd)
 {
-    return atomic_load(&osd->force_video_pts);
+    pthread_mutex_lock(&osd->lock);
+    double pts = osd->force_video_pts;
+    pthread_mutex_unlock(&osd->lock);
+    return pts;
 }
 
 void osd_set_progbar(struct osd_state *osd, struct osd_progbar_state *s)
@@ -330,9 +339,8 @@ struct sub_bitmap_list *osd_render(struct osd_state *osd, struct mp_osd_res res,
     list->w = res.w;
     list->h = res.h;
 
-    double force_video_pts = atomic_load(&osd->force_video_pts);
-    if (force_video_pts != MP_NOPTS_VALUE)
-        video_pts = force_video_pts;
+    if (osd->force_video_pts != MP_NOPTS_VALUE)
+        video_pts = osd->force_video_pts;
 
     if (draw_flags & OSD_DRAW_SUB_FILTER)
         draw_flags |= OSD_DRAW_SUB_ONLY;
