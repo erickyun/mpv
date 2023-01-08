@@ -1,0 +1,155 @@
+Release 0.35.0
+==============
+
+This release requires FFmpeg 4.0 or newer.
+
+For packagers: Note that mpv's build system is only supported on Python 3.
+If you use the `bootstrap.py` script it will take care of this, otherwise you
+need to explicitly invoke the build system using `python3 waf`.
+
+This release adds the Meson build system as an alternative to waf.
+It is supposed to be feature-complete but please report any issues you encounter.
+
+
+Features
+--------
+
+Added
+~~~~~
+
+- vo_gpu_next: add new libplacebo-based renderer
+- build: add meson build support
+- vo_gpu_next: forward Dolby Vision metadata to libplacebo
+- ao_pipewire: add PipeWire audio backend
+- ao_sndio: readd this audio output again
+- vo_gpu_next: apply film grain if such metadata is present
+- drm: context_drm_egl: add support for enabling VRR
+- demux: add support for R128 replaygain tags
+- x11: support X Present extension
+- af_rubberband: add support for new engine in rubberband 3.0.0
+- hwdec/drmprime: add drmprime hwdec-interop (commonly found on SoCs)
+- various: support binding functions keys beyond F12
+- audio: support hotplug events for multiple AOs
+- sub: use Unicode linebreaking for non-ASS subs and OSD
+- vo_gpu: hwdec: add Android hwdec utilizing AImageReader
+- vo_dmabuf_wayland: add wayland VO displaying dmabuf buffers (vaapi or drm hwdec only)
+- lua/console: add history deduplication
+
+
+Changed
+~~~~~~~
+
+- filters: re-add vavpp hardware deinterlacing auto-filter (for --deinterlace)
+- swresample: don't forcibly clip audio on every conversion
+- ytdl_hook: always set HTTP headers to fix yt-dlp on certain sites
+
+
+Removed
+~~~~~~~
+
+- libmpv: remove opengl_cb API and other deprecated symbols
+- lua: remove deprecated mp.suspend(), resume() and resume_all()
+- build: raise minimum libplacebo version requirement to v4.157.0
+
+
+Options and Commands
+--------------------
+
+Added
+~~~~~
+
+- vo_gpu_next: add --target-colorspace-hint to facilitate HDR passthrough
+- vo_gpu_next: new tone mapping options 'auto', 'spline', 'bt.2446a'
+               and add --tone-mapping-crosstalk, --inverse-tone-mapping
+- vo_gpu: add --gamut-mapping-mode and --tone-mapping-mode
+- options: add 'always' choice to --stop-screensaver
+- options: add --osd-playing-msg-duration
+- player: add --cover-art-whitelist option
+- x11: add --x11-present option
+
+
+Changed
+~~~~~~~
+
+- ao_openal: enable --openal-direct-channels by default
+- options: only apply --sub-visibility to primary subtitles
+- options: make --cover-art-auto=exact the default
+- vo_gpu/hwdec: rename and introduce legacy names for some interops
+
+
+Deprecated
+~~~~~~~~~~
+
+- vo_gpu: deprecate --gamma-factor and --gamma-auto
+
+
+Removed
+~~~~~~~
+
+- vo_gpu: remove --gamut-clipping, --gamut-warning, --tone-mapping-desaturate and
+          --tone-mapping-desaturate-exponent (replacements available)
+- vulkan: remove --vulkan-disable-events
+
+
+Fixes and Minor Enhancements
+----------------------------
+
+- context_drm_egl: use gbm_surface_create_with_modifiers
+- context_drm_egl: add support for BGR surface formats
+- vo_gpu: vulkan: open DRM render fd when using VK_KHR_display
+- client API: use symbol visibility attributes
+- vo_gpu: hwdec_vaapi: add dma-buf modifiers support
+- wayland: fix various issues that could lead to jitter
+- osc: fix cache displaying 60s in some cases
+- player: make --keep-open=always work with --loop-playlist
+- opengl: support driver debug message under OpenGL ES
+- vo_gpu: opengl: fixes for OpenGL ES version and extension handling
+- f_decoder_wrapper: support frame rotation metadata (used by JPEG)
+- wscript: switch shaderc checks to pkgconfig
+- vd_lavc: enable hwdec for prores by default
+- vo_gpu: add HOOKED_gather for custom shaders
+- wayland, x11: sanitize window title for valid UTF-8
+- win32: apply geometry position to content instead of window
+- filter_kernels: add cosine window
+- vo_gpu: hwdec_vaapi: don't probe formats for irrelevant endpoints
+- vo_gpu: hwdec: load hwdec interops on-demand by default
+- stats.lua: graphs: fix bad rendering due to division by 0
+- hwdec: warn on unsupported --hwdec option value
+- x11: fix --screen-name option
+- x11: avoid wasteful rendering when possible
+- video/image_writer: add JPEG XL support
+- stream_lavf: enable ipfs, ipns and rist protocol support
+- osc.lua: fix crash when calling osc-tracklist while idle
+- player: add jxl, tiff, tif to list of image extensions
+- various: switch to new AVChannelLayout structure
+- lua: command_native_async: always run callback asynchronously (edge case)
+- context_x11egl: remove supposed transparency workaround
+- vo_gpu: fix 3DLUT precision
+- drm: avoid drmModeAtomicCommit races by blocking
+- drm_common: skip cards that don't support KMS for autodetection
+- hwdec/dmabuf_interop_gl: support basic multi-plane formats
+- misc/random: switch to internal xoshiro rng implementation
+- ytdl_hook: improve track detection
+- ad_lavc: strip non-normalized floats
+- mpv.metainfo.xml: add XDG appstream metadata manifest
+- mac: avoid unnecessary unsafe conversions; fixes crash in debug builds
+- af_scaletempo2: fix crash when the number of channels increases
+- wayland: correctly handle non-CLOCK_MONOTONIC clocks
+- x11: fix --on-all-workspaces option
+- sd_ass: improve handling of subtitles with unknown duration
+- hwdec/vaapi: improve probing of supported sw formats
+- demux_mf: enable support for QOI, PHM and HDR images
+- demux_mkv: add AVS2 and AVS3 to tag list
+- TOOLS/lua/autoload: fix incorrect duplicate file loading behavior
+- demux/codec_tags: support more WAVEFORMATEXTENSIBLE tags
+- sd_ass: never mangle colours on RGB video
+
+
+This listing is not complete. Check DOCS/client-api-changes.rst for a history
+of changes to the client API, and DOCS/interface-changes.rst for a history
+of changes to other user-visible interfaces.
+
+A complete changelog can be seen by running `git log v0.34.0..v0.35.0`
+in the git repository or by visiting either
+https://github.com/mpv-player/mpv/compare/v0.34.0...v0.35.0 or
+https://git.srsfckn.biz/mpv/log/?qt=range&q=v0.34.0..v0.35.0
